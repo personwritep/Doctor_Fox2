@@ -1,0 +1,143 @@
+// ==UserScript==
+// @name         Doctor Fox
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  try to take over the world!
+// @author       Ameba Blog User
+// @match        https://blog.ameba.jp/ucs/entry/srventry*
+// @match        https://ameblo.jp/*/entry-preview/desktop
+// @exclude      https://blog.ameba.jp/ucs/entry/srventrylist*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=ameba.jp
+// @grant        none
+// ==/UserScript==
+
+
+
+if(location.hostname=='blog.ameba.jp'){
+
+    let wysig_style=localStorage.getItem('GRACEFUL_STORAGE:PC_EDITOR:inputLayoutStyle')
+
+    if(!wysig_style){
+        alert("WYSIWYG設定が読めませんでした"); }
+
+
+    else{
+        let pos;
+        let width;
+        let width_tail
+
+        let wysig_all=wysig_style.split(',');
+
+        width_get();
+        user_set();
+
+
+
+        function width_get(){
+            let wysig_width_s;
+            pos=0;
+
+            for(let k=0; k<wysig_all.length; k++){
+                if(wysig_all[k].includes('width')){
+                    wysig_width_s=wysig_all[k];
+                    pos=k; }}
+
+            width=(wysig_width_s.match(/\d+/g)[0]) -16;
+            width_tail=wysig_width_s.slice(11); }
+
+
+
+        function user_set(){
+            let panel=
+                '<div id="DF_panel">'+
+                '<p>ストレージに登録された「デザイン幅」：　<span id="design_w"></span> px</p>'+
+                '<p>ユーザーによる修正値の「デザイン幅」：<input id="design_wset" type="number"></p>'+
+                '<p style="text-align: center"><input id="new_set" type="submit" value="設定を変更"></p>'+
+                '<p id="add_mess">▶ 設定を有効にするには編集画面をリロードします</p>'+
+                '</div>'+
+                '<style>'+
+                '#DF_panel { position: fixed; top: 40vh; left: calc(50% - 350px); z-index: 100; '+
+                'font: bold 16px/30px Meiryo; padding: 10px 20px; border: 1px solid #aaa; '+
+                'background: #fff; box-shadow: 10px 20px 40px #bac0c4; } '+
+                '#design_wset { width: 60px; padding: 2px 6px 0 10px; margin-left: 4px; } '+
+                '#new_set { padding: 5px 20px 3px; color: #fff; '+
+                'border: 1px solid #aaa; border-radius: 4px; background: #2196f3; '+
+                'margin: 30px 0 10px; } '+
+                '#new_set:hover { background: #1565c0; } '+
+                '#add_mess { color: red; display: none; }'+
+                '</style>';
+
+            if(!document.querySelector('#DF_panel')){
+                document.body.insertAdjacentHTML('beforeend', panel); }
+
+
+            let design_w=document.querySelector('#design_w');
+            let design_wset=document.querySelector('#design_wset');
+            let new_set=document.querySelector('#new_set');
+            if(design_w && design_wset && new_set){
+                design_w.textContent=width;
+                design_wset.value=width;
+
+
+                setTimeout(()=>{
+
+                    let editor_iframe=document.querySelector('.cke_wysiwyg_frame');
+                    if(editor_iframe){ // iframe読込みが実行条件
+                        let iframe_doc=editor_iframe.contentWindow.document;
+                        if(iframe_doc){
+                            let iframe_body=iframe_doc.querySelector('body.cke_editable');
+                            if(iframe_body){
+                                let max_width=editor_iframe.getBoundingClientRect().width - 32;
+                                design_wset.max=max_width;
+                                design_wset.min=300;
+
+                                design_wset.addEventListener('input', function(){
+                                    iframe_body.style.width=(design_wset.value/1 + 16)+'px'; });
+                            }}}
+
+                }, 2000);
+
+
+                new_set.onclick=function(){
+                    let new_set_width='"width":'+ (design_wset.value/1 + 16) + width_tail;
+                    wysig_all[pos]=new_set_width;
+                    let new_wysig_all=wysig_all.join(',');
+                    localStorage.setItem('GRACEFUL_STORAGE:PC_EDITOR:inputLayoutStyle', new_wysig_all);
+
+                    let add_mess=document.querySelector('#add_mess');
+                    if(add_mess){
+                        setTimeout(()=>{
+                            add_mess.style.display='block';
+                        }, 1000); }}
+
+            }} // user_set()
+
+    }
+} // blog.ameba.jp
+
+
+
+
+if(location.hostname=='ameblo.jp'){
+
+    let retry=0;
+    let interval=setInterval(wait_target, 500);
+    function wait_target(){
+        retry++;
+        if(retry>20){ // リトライ制限 20回 10sec
+            clearInterval(interval);
+            alert("● 再度 編集画面をリロードしてみてください"); }
+
+        let target=document.querySelector('#entryBody'); // 監視 target
+        if(target){
+            clearInterval(interval);
+            measure(); }}
+
+
+    function measure(){
+        let entrybody=document.querySelector('#entryBody');
+        if(entrybody){
+            let entry_width=entrybody.getBoundingClientRect().width;
+            alert(entry_width); }}
+
+} // ameblo.jp
