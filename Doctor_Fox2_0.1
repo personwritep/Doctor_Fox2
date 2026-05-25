@@ -1,0 +1,112 @@
+// ==UserScript==
+// @name         Doctor Fox2
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  「デザイン幅で表示」の参照データをリセットする
+// @author       Ameba Blog User
+// @match        https://blog.ameba.jp/ucs/entry/srventry*
+// @exclude      https://blog.ameba.jp/ucs/entry/srventrylist*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=ameba.jp
+// @grant        none
+// ==/UserScript==
+
+
+let wysig_style=localStorage.getItem('GRACEFUL_STORAGE:PC_EDITOR:inputLayoutStyle')
+
+if(!wysig_style){
+    alert("WYSIWYG設定がありません"); }
+
+else{
+    let wysig_all=wysig_style.replace('}}', '').split('{')[2];
+    let set_item=wysig_all.split('","');
+
+    let set_items=[];
+    for(let k=0; k<4; k++){
+        set_items[k]=set_item[k].split('":"'); }
+    set_items[4]=set_item[4].split('":');
+    set_items[2][1]=set_items[2][1].replace(/\\"/g, '"');
+
+
+    user_set();
+
+    function user_set(){
+
+        let help_url="https://ameblo.jp/personwritep/entry-12803527558.html";
+
+        let help=
+            '<a class="DF_help" href="'+ help_url +'" target="_blank">'+
+            '<svg width="22" height="24" viewBox="0 0 150 150">'+
+            '<path  fill="#777" d="M66 13C56 15 47 18 39 24C-12 60 18 146 82 137C92 '+
+            '135 102 131 110 126C162 90 128 4 66 13M68 25C131 17 145 117 81 '+
+            '125C16 133 3 34 68 25M69 40C61 41 39 58 58 61C66 63 73 47 82 57C84 '+
+            '60 83 62 81 65C77 70 52 90 76 89C82 89 82 84 86 81C92 76 98 74 100 66'+
+            'C105 48 84 37 69 40M70 94C58 99 66 118 78 112C90 107 82 89 70 94z">'+
+            '</path></svg>'+
+            '<style>.DF_help { vertical-align: -8px; text-decoration: none; cursor: pointer; }'+
+            '</style></a>';
+
+        let panel=
+            '<div id="DF_panel2">'+
+            '<p>== ストレージに登録されたWYSIWYG設定 ==　　　'+ help +'</p>'+
+            '<p>skinCode：'+ set_items[0][1] +'</p>'+
+            '<p>useLayout：'+ set_items[1][1] +'</p>'+
+            '<p>fontFamily：'+ set_items[2][1] +'</p>'+
+            '<p>fontSize：'+ set_items[3][1] +'</p>'+
+            '<p>width：'+ set_items[4][1] +'</p>'+
+
+            '<p style="text-align: center">'+
+            '<input id="new_set2" type="submit" value="登録をリセット">　　'+
+            '<input id="close_new_set2" type="submit" value="終了"></p>'+
+            '<p id="add_mess2">▶ 以下の操作を続けて最後まで行います<br>'+
+            '<span class="mess3">❶ 編集画面をリロードします</span><br>'+
+            '<span class="mess3">❷ リロード後に「WYSIWYG設定がありません」と表示されます'+
+            '</span><br>'+
+            '<span class="mess3">❸「デザイン幅で表示」を「OFF」➔「ON」と操作し、'+
+            '再度リロードします</span><br>'+
+            '<span class="mess3">❹ リセット後の新しい「WYSIWYG設定」が表示されます'+
+            '</span></p>'+
+            '<p id="add_mess4">▶ ダッシュボードで「Doctor Fox2」をOFFにして'+
+            'リロードしてください</p>'+
+            '</div>'+
+            '<style>'+
+            '#DF_panel2 { position: fixed; top: 30vh; left: calc(50% - 350px); z-index: 100; '+
+            'font: bold 16px/30px Meiryo; padding: 10px 20px; border: 1px solid #aaa; '+
+            'background: #fff; box-shadow: 10px 20px 40px #bac0c4; width:600px; } '+
+            '#new_set2, #close_new_set2 { padding: 5px 20px 3px; color: #fff; '+
+            'border: 1px solid #aaa; border-radius: 4px; background: #2196f3; '+
+            'margin: 30px 0 10px; } '+
+            '#new_set2:hover, #close_new_set2:hover { background: #1565c0; } '+
+            '#add_mess2, #add_mess4 { color: red; display: none; } '+
+            '.mess3 { color: #444; padding-left: 1em; font-weight: normal; }'+
+            '</style>';
+
+        if(!document.querySelector('#DF_panel2')){
+            document.body.insertAdjacentHTML('beforeend', panel); }
+
+
+        let new_set2=document.querySelector('#new_set2');
+        let close_new_set2=document.querySelector('#close_new_set2');
+        let add_mess2=document.querySelector('#add_mess2');
+        let add_mess4=document.querySelector('#add_mess4');
+
+        new_set2.onclick=function(){ // ストレージの登録を削除
+            localStorage.removeItem('GRACEFUL_STORAGE:PC_EDITOR:inputLayoutStyle');
+            new_set2.remove();
+            close_new_set2.remove();
+
+            setTimeout(()=>{
+                add_mess2.style.display='block';
+            }, 500); }
+
+
+        close_new_set2.onclick=function(){ // 終了表示
+            new_set2.remove();
+            close_new_set2.remove();
+
+            setTimeout(()=>{
+                add_mess4.style.display='block';
+            }, 200); }
+
+
+    } // user_set()
+}
