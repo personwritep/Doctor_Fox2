@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        Doctor Fox2
 // @namespace        http://tampermonkey.net/
-// @version        0.6
+// @version        0.7
 // @description        「デザイン幅で表示」の参照データをリセットする
 // @author        Ameba Blog User
-// @match        https://blog.ameba.jp/ucs/entry/srventry*
-// @exclude        https://blog.ameba.jp/ucs/entry/srventrylist*
+// @match        https://blog.ameba.jp/ucs/entry/srventryinsertinput.do*
+// @match        https://blog.ameba.jp/ucs/entry/srventryupdateinput.do*
 // @icon        https://www.google.com/s2/favicons?sz=64&domain=ameba.jp
 // @grant        none
 // @updateURL        https://github.com/personwritep/Doctor_Fox2/raw/main/Doctor_Fox2.user.js
@@ -228,6 +228,3 @@ function auto_check(){
     }, 2000);
 
 } // auto_check()
-
-
-
